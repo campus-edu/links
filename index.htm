@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group8 Links</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background Blobs */
+        .bg-blobs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            background: #0f172a;
+        }
+
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: float 20s infinite alternate;
+        }
+
+        .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #4f46e5; animation-delay: 0s; }
+        .blob-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: #7c3aed; animation-delay: -5s; }
+        .blob-3 { top: 40%; left: 40%; width: 40vw; height: 40vw; background: #db2777; animation-delay: -10s; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 50px) scale(1.1); }
+        }
+
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Background Animation -->
+    <div class="bg-blobs">
+        <div class="blob blob-1 rounded-full"></div>
+        <div class="blob blob-2 rounded-full"></div>
+        <div class="blob blob-3 rounded-full"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="glass-panel sticky top-0 z-50 border-b-0 border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                        <i class="fa-solid fa-layer-group text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight text-white">Group8</h1>
+                        <p class="text-xs text-gray-400 font-medium">Links</p>
+                    </div>
+                </div>
+                <!-- No Add Button - Static Site -->
+                <div class="text-sm text-indigo-200 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
+                    <i class="fa-regular fa-calendar mr-2"></i>
+                    <span>Fall Quarter 2025</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Grid -->
+    <main class="flex-grow p-6 sm:p-10 relative z-10">
+        <div class="max-w-7xl mx-auto mb-8 flex justify-between items-center">
+            <h2 class="text-2xl font-semibold text-white/90">Upcoming Deadlines</h2>
+            <div class="text-sm text-gray-400">2 Assignments</div>
+        </div>
+
+        <div id="pin-container" class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Static Pins injected here -->
+        </div>
+    </main>
+
+    <script>
+        // --- Static Data Configuration ---
+        // Edit these objects to change the content displayed on the site
+        const staticPins = [
+            { 
+                id: '1', 
+                title: 'Team Charter', 
+                // REPLACE THIS URL with your actual Google Doc link
+                url: 'https://docs.google.com/document/d/1dci-OMoisMKeegyh9XK_5nrHku53Wox34YQ0o-Mj0Kg/edit?usp=sharing', 
+                description: 'Small assignment, mostly subjective questions. Add your two cents to several questions in order to gain credit.', 
+                dueDate: 'Nov 24',
+                color: 'indigo' 
+            },
+            { 
+                id: '2', 
+                title: 'Checkpoint Assignment', 
+                // REPLACE THIS URL with your actual Google Doc link
+                url: 'https://docs.google.com/document/d/1PjAxI2IRExi_4kDWuSRAxK7kCroHqQ24Z05p8-2O_fE/edit?usp=sharing', 
+                description: 'Mid-point submission for group project. Ensure you complete your writing assignment given your role.', 
+                dueDate: 'Nov 24',
+                color: 'emerald' 
+            }
+        ];
+
+        const pinContainer = document.getElementById('pin-container');
+
+        function renderPins() {
+            pinContainer.innerHTML = '';
+            staticPins.forEach(pin => pinContainer.appendChild(createPinElement(pin)));
+        }
+
+        function createPinElement(pin) {
+            const div = document.createElement('div');
+            
+            // Glass gradients
+            const gradients = {
+                indigo: 'from-indigo-500/20 to-purple-500/20 border-indigo-500/30 hover:border-indigo-500/50',
+                emerald: 'from-emerald-500/20 to-teal-500/20 border-emerald-500/30 hover:border-emerald-500/50',
+                rose: 'from-rose-500/20 to-pink-500/20 border-rose-500/30 hover:border-rose-500/50',
+            };
+            
+            const glowColors = {
+                indigo: 'bg-indigo-500',
+                emerald: 'bg-emerald-500',
+                rose: 'bg-rose-500',
+            };
+
+            const gradientClass = gradients[pin.color] || gradients.indigo;
+            const glowClass = glowColors[pin.color] || 'bg-indigo-500';
+
+            // Icon Detection
+            let icon = 'fa-link';
+            if (pin.url.includes('docs.google')) icon = 'fa-file-lines';
+            else if (pin.url.includes('drive.google')) icon = 'fa-google-drive';
+            else if (pin.url.includes('figma')) icon = 'fa-pen-nib';
+
+            div.className = `glass-card rounded-2xl p-6 flex flex-col h-64 relative group bg-gradient-to-br ${gradientClass}`;
+            
+            div.innerHTML = `
+                <div class="flex items-start gap-4 mb-4">
+                    <div class="w-12 h-12 rounded-lg ${glowClass} bg-opacity-20 flex items-center justify-center border border-white/10 shrink-0 shadow-[0_0_15px_rgba(0,0,0,0.2)]">
+                        <i class="fa-solid ${icon} text-white text-xl"></i>
+                    </div>
+                    <div class="overflow-hidden pt-1">
+                        <h3 class="font-semibold text-lg leading-tight text-white truncate mb-1" title="${pin.title}">${pin.title}</h3>
+                        <div class="flex items-center gap-2 text-xs font-medium">
+                             <span class="bg-white/10 px-2 py-0.5 rounded text-indigo-200 border border-white/5">
+                                Due ${pin.dueDate}
+                             </span>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-sm text-gray-300 leading-relaxed line-clamp-3 mb-auto opacity-80 border-t border-white/5 pt-4 mt-2">
+                    ${pin.description}
+                </p>
+
+                <div class="mt-4 pt-4 flex justify-between items-end">
+                    <a href="${pin.url}" target="_blank" class="w-full text-center bg-white/10 hover:bg-white/20 border border-white/10 text-white py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 group-hover:shadow-lg">
+                        Open Doc <i class="fa-solid fa-arrow-up-right-from-square text-xs opacity-70"></i>
+                    </a>
+                </div>
+            `;
+            return div;
+        }
+
+        // Initial Render
+        renderPins();
+    </script>
+</body>
+</html>
