@@ -11,7 +11,6 @@ const LinkSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add a URL'],
         trim: true,
-        // This regex ensures the URL starts with http:// or https://
         match: [
             /^https?:\/\//,
             'Please enter a valid URL starting with http:// or https://'
@@ -30,6 +29,11 @@ const LinkSchema = new mongoose.Schema({
         type: String,
         enum: ['indigo', 'emerald', 'rose', 'amber'],
         default: 'indigo'
+    },
+    // NEW: Tracks the order of the cards
+    position: {
+        type: Number,
+        default: 0
     },
     createdAt: {
         type: Date,
