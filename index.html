@@ -26,12 +26,41 @@
         .blob-3 { top: 40%; left: 40%; width: 40vw; height: 40vw; background: #db2777; animation-delay: -10s; }
         @keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(30px, 50px) scale(1.1); } }
         
+        /* Glassmorphism */
         .glass-panel { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
-        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); transition: transform 0.2s, box-shadow 0.2s; cursor: grab; }
-        .glass-card:active { cursor: grabbing; }
-        /* Styles for the card being dragged */
-        .sortable-ghost { opacity: 0.4; background: rgba(255, 255, 255, 0.1); border: 2px dashed rgba(255, 255, 255, 0.3); }
-        .sortable-drag { opacity: 1; transform: scale(1.05); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.2); z-index: 50; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); transition: transform 0.2s, box-shadow 0.2s; }
+        
+        /* Wiggle Animation */
+        @keyframes wiggle {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-1deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(1deg); }
+            100% { transform: rotate(0deg); }
+        }
+        
+        .wiggle-mode .glass-card {
+            animation: wiggle 0.3s ease-in-out infinite;
+            cursor: grab !important;
+            border-color: rgba(255, 255, 255, 0.4); /* Highlight borders when arranging */
+        }
+        .wiggle-mode .glass-card:active {
+            cursor: grabbing !important;
+            animation: none; /* Stop wiggling while holding */
+            transform: scale(1.05);
+        }
+
+        /* Standard Interactions (when NOT in wiggle mode) */
+        body:not(.wiggle-mode) .glass-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Sortable States */
+        .sortable-ghost { opacity: 0.4; background: rgba(255, 255, 255, 0.1); border: 2px dashed rgba(255, 255, 255, 0.3); animation: none; }
+        .sortable-drag { opacity: 1; transform: scale(1.05); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); z-index: 50; animation: none; }
 
         .modal-overlay { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); }
         .glass-input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white; transition: all 0.2s; }
@@ -61,12 +90,16 @@
                         <p class="text-xs text-gray-400 font-medium">Digital Bulletin Board</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-4">
-                    <div class="hidden md:flex text-sm text-indigo-200 bg-indigo-500/10 px-3 py-1.5 rounded-full border border-indigo-500/20 items-center">
-                        <i class="fa-regular fa-calendar mr-2"></i><span>Fall 2025</span>
-                    </div>
+                <div class="flex items-center gap-3">
+                    <!-- Arrange Button -->
+                    <button id="arrange-btn" onclick="toggleArrangeMode()" class="text-indigo-200 bg-indigo-500/10 hover:bg-indigo-500/20 px-4 py-2 rounded-lg font-medium text-sm transition-colors border border-indigo-500/20 flex items-center gap-2">
+                        <i class="fa-solid fa-arrows-up-down-left-right"></i>
+                        <span id="arrange-text">Arrange</span>
+                    </button>
+                    
+                    <!-- Add Button -->
                     <button onclick="toggleModal(true)" class="bg-white text-indigo-900 hover:bg-indigo-50 px-4 py-2 rounded-lg font-semibold text-sm transition-colors shadow-lg shadow-white/10 flex items-center gap-2">
-                        <i class="fa-solid fa-plus"></i><span class="hidden sm:inline">Add Resource</span>
+                        <i class="fa-solid fa-plus"></i><span class="hidden sm:inline">Add</span>
                     </button>
                 </div>
             </div>
@@ -77,12 +110,11 @@
         <div class="max-w-7xl mx-auto mb-8 flex justify-between items-end border-b border-white/10 pb-4">
             <div>
                 <h2 class="text-2xl font-semibold text-white/90">Dashboard</h2>
-                <p class="text-sm text-gray-400 mt-1">Drag cards to rearrange priority.</p>
+                <p class="text-sm text-gray-400 mt-1">Manage shared links, docs, and deadlines.</p>
             </div>
             <div class="text-sm text-gray-400 font-mono"><span id="count-display">Loading...</span></div>
         </div>
 
-        <!-- Added id="pin-container" for SortableJS -->
         <div id="pin-container" class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         </div>
     </main>
@@ -140,6 +172,7 @@
         // --- State ---
         let resources = [];
         let sortableInstance = null;
+        let isArranging = false;
 
         // --- Elements ---
         const pinContainer = document.getElementById('pin-container');
@@ -148,21 +181,51 @@
         const modalBackdrop = document.getElementById('modal-backdrop');
         const modalPanel = document.getElementById('modal-panel');
         const formError = document.getElementById('form-error');
+        const arrangeBtn = document.getElementById('arrange-btn');
+        const arrangeText = document.getElementById('arrange-text');
 
         // --- Init ---
         async function init() {
-            // Initialize SortableJS
+            // Initialize SortableJS but keep it disabled initially
             sortableInstance = new Sortable(pinContainer, {
                 animation: 150,
+                disabled: true, // Disabled by default!
                 ghostClass: 'sortable-ghost',
                 dragClass: 'sortable-drag',
-                delay: 100, // Slight delay prevents accidental drags on touch
-                delayOnTouchOnly: true,
+                delay: 0, // Instant drag when enabled
                 onEnd: function (evt) {
                     saveNewOrder();
                 }
             });
             await fetchResources();
+        }
+
+        // --- Toggle Arrange Mode ---
+        function toggleArrangeMode() {
+            isArranging = !isArranging;
+            
+            if (isArranging) {
+                // Enable Dragging
+                document.body.classList.add('wiggle-mode');
+                sortableInstance.option('disabled', false);
+                
+                // Update Button UI
+                arrangeText.innerText = "Done";
+                arrangeBtn.classList.add('bg-indigo-500', 'text-white', 'border-indigo-500');
+                arrangeBtn.classList.remove('bg-indigo-500/10', 'text-indigo-200', 'border-indigo-500/20');
+                arrangeBtn.innerHTML = `<i class="fa-solid fa-check"></i> <span id="arrange-text">Done</span>`;
+                
+                showToast("Drag cards to reorder! ✋");
+            } else {
+                // Disable Dragging
+                document.body.classList.remove('wiggle-mode');
+                sortableInstance.option('disabled', true);
+                
+                // Reset Button UI
+                arrangeBtn.classList.remove('bg-indigo-500', 'text-white', 'border-indigo-500');
+                arrangeBtn.classList.add('bg-indigo-500/10', 'text-indigo-200', 'border-indigo-500/20');
+                arrangeBtn.innerHTML = `<i class="fa-solid fa-arrows-up-down-left-right"></i> <span id="arrange-text">Arrange</span>`;
+            }
         }
 
         // --- API Logic ---
@@ -179,27 +242,16 @@
         }
 
         async function saveNewOrder() {
-            // 1. Get all card IDs in their new DOM order
             const cards = Array.from(pinContainer.children);
-            const newOrderIds = cards.map(card => card.dataset.id).filter(id => id); // ensure ID exists
-            
+            const newOrderIds = cards.map(card => card.dataset.id).filter(id => id);
             if (newOrderIds.length === 0) return;
 
-            // 2. Send to backend
             try {
-                const response = await fetch('/api/links/reorder', {
+                await fetch('/api/links/reorder', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ order: newOrderIds })
                 });
-                
-                if (!response.ok) {
-                    console.error('Failed to save order');
-                    showToast("Failed to save new order ⚠️");
-                } else {
-                    // Optional: Updates are silent unless error
-                    console.log("Order saved.");
-                }
             } catch (err) {
                 console.error(err);
                 showToast("Connection failed ⚠️");
@@ -226,8 +278,6 @@
 
         function createPinElement(pin) {
             const div = document.createElement('div');
-            
-            // IMPORTANT: Add data-id for SortableJS
             div.dataset.id = pin._id;
 
             const config = {
@@ -261,7 +311,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Delete Button (re-enabled pointer events) -->
                 <button onclick="deleteResource('${pin._id}')" class="absolute top-4 right-4 text-white/20 hover:text-rose-400 transition-colors p-2 z-10" title="Delete">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
