@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Group8 Links | Bulletin Board</title>
+    <!-- Emoji Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📌</text></svg>">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
@@ -87,6 +90,32 @@
             border-color: rgba(99, 102, 241, 0.5);
             outline: none;
             box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px; 
+            background-color: #333; 
+            color: #fff; 
+            text-align: center; 
+            border-radius: 8px; 
+            padding: 16px; 
+            position: fixed; 
+            z-index: 100; 
+            left: 50%; 
+            bottom: 30px; 
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
         }
 
         /* Scrollbar */
@@ -184,8 +213,9 @@
                     <!-- URL -->
                     <div>
                         <label class="block text-sm font-medium text-gray-300 mb-1">Resource URL</label>
-                        <input type="url" name="url" required placeholder="https://docs.google.com/..." 
+                        <input type="url" name="url" required placeholder="https://..." 
                             class="glass-input w-full rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500">
+                        <p class="text-xs text-gray-500 mt-1">Must start with http:// or https://</p>
                     </div>
 
                     <!-- Description -->
@@ -215,12 +245,16 @@
                         </div>
                     </div>
 
+                    <!-- Error Message Container -->
+                    <div id="form-error" class="hidden bg-rose-500/10 border border-rose-500/20 text-rose-200 text-sm p-3 rounded-lg">
+                    </div>
+
                     <!-- Footer -->
                     <div class="pt-4 flex justify-end gap-3">
                         <button type="button" onclick="toggleModal(false)" class="px-4 py-2 text-gray-300 hover:text-white font-medium transition-colors">
                             Cancel
                         </button>
-                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-lg font-semibold shadow-lg shadow-indigo-500/20 transition-all transform hover:scale-[1.02]">
+                        <button type="submit" id="submit-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-lg font-semibold shadow-lg shadow-indigo-500/20 transition-all transform hover:scale-[1.02]">
                             Post Resource
                         </button>
                     </div>
@@ -228,6 +262,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">Link copied to clipboard!</div>
 
     <script>
         // --- State Management ---
@@ -239,6 +276,7 @@
         const modal = document.getElementById('add-modal');
         const modalBackdrop = document.getElementById('modal-backdrop');
         const modalPanel = document.getElementById('modal-panel');
+        const formError = document.getElementById('form-error');
 
         // --- Logic ---
 
@@ -246,7 +284,6 @@
             await fetchResources();
         }
 
-        // Updated: Fetch from API
         async function fetchResources() {
             try {
                 const response = await fetch('/api/links');
@@ -255,7 +292,6 @@
                 renderPins();
             } catch (error) {
                 console.error('Error loading resources:', error);
-                // Optionally show an error state in the UI
                 pinContainer.innerHTML = `<div class="col-span-full text-center text-rose-400 py-10">Failed to load resources. Check your server connection.</div>`;
             }
         }
@@ -326,10 +362,13 @@
                     ${escapeHtml(pin.description)}
                 </p>
 
-                <div class="mt-4 pt-4 flex justify-between items-end">
-                    <a href="${escapeHtml(pin.url)}" target="_blank" class="w-full text-center bg-white/10 hover:bg-white/20 border border-white/10 text-white py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 group-hover:shadow-lg group-hover:bg-white/15">
-                        Open Resource <i class="fa-solid fa-arrow-up-right-from-square text-xs opacity-70"></i>
+                <div class="mt-4 pt-4 flex gap-3 items-end">
+                    <a href="${escapeHtml(pin.url)}" target="_blank" class="flex-grow text-center bg-white/10 hover:bg-white/20 border border-white/10 text-white py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 group-hover:shadow-lg group-hover:bg-white/15">
+                        Open <i class="fa-solid fa-arrow-up-right-from-square text-xs opacity-70"></i>
                     </a>
+                    <button onclick="copyToClipboard('${escapeHtml(pin.url)}')" class="bg-white/5 hover:bg-white/10 border border-white/10 text-white py-2 px-3 rounded-lg transition-all" title="Copy Link">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
                 </div>
             `;
             return div;
@@ -338,6 +377,7 @@
         // --- Modal Logic ---
 
         function toggleModal(show) {
+            formError.classList.add('hidden');
             if (show) {
                 modal.classList.remove('hidden');
                 setTimeout(() => {
@@ -356,10 +396,31 @@
             }
         }
 
+        // --- Utilities ---
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Link copied to clipboard! 📋");
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
         // --- Form Handling ---
 
         async function handleFormSubmit(e) {
             e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.innerText = "Posting...";
+            formError.classList.add('hidden');
             
             const formData = new FormData(e.target);
             const newResource = {
@@ -373,33 +434,48 @@
             try {
                 const response = await fetch('/api/links', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(newResource)
                 });
 
+                const data = await response.json();
+
                 if (response.ok) {
-                    await fetchResources(); // Reload list
+                    await fetchResources();
                     toggleModal(false);
+                    showToast("Resource added successfully! 🎉");
                 } else {
-                    alert('Failed to create resource');
+                    // Handle Mongoose Validation Errors
+                    let msg = 'Failed to create resource';
+                    if (data.error) {
+                        // Extract just the user-friendly part if possible
+                        if (data.error.includes("Link validation failed")) {
+                             msg = data.error.split(':').pop(); // Get last part of error
+                        } else {
+                            msg = data.error;
+                        }
+                    }
+                    formError.innerText = msg;
+                    formError.classList.remove('hidden');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error connecting to server');
+                formError.innerText = "Server connection failed.";
+                formError.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Post Resource";
             }
         }
 
         async function deleteResource(id) {
             if(confirm('Are you sure you want to remove this link?')) {
                 try {
-                    const response = await fetch(`/api/links/${id}`, {
-                        method: 'DELETE'
-                    });
+                    const response = await fetch(`/api/links/${id}`, { method: 'DELETE' });
                     
                     if (response.ok) {
-                        await fetchResources(); // Reload list
+                        await fetchResources();
+                        showToast("Resource deleted. 🗑️");
                     } else {
                         alert('Failed to delete resource');
                     }
