@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Group8 Links</title>
+    <title>Group8 Links | Bulletin Board</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
@@ -26,6 +26,7 @@
             z-index: -1;
             overflow: hidden;
             background: #0f172a;
+            pointer-events: none;
         }
 
         .blob {
@@ -49,7 +50,7 @@
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
         }
 
@@ -66,6 +67,26 @@
             transform: translateY(-5px);
             border-color: rgba(255, 255, 255, 0.2);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+        }
+
+        /* Form Inputs */
+        .glass-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.2s;
+        }
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(99, 102, 241, 0.5);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
         }
 
         /* Scrollbar */
@@ -85,7 +106,7 @@
     </div>
 
     <!-- Navbar -->
-    <nav class="glass-panel sticky top-0 z-50 border-b-0 border-white/10">
+    <nav class="glass-panel sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20 items-center">
                 <div class="flex items-center gap-4">
@@ -94,118 +115,303 @@
                     </div>
                     <div>
                         <h1 class="text-xl font-bold tracking-tight text-white">Group8</h1>
-                        <p class="text-xs text-gray-400 font-medium">Links</p>
+                        <p class="text-xs text-gray-400 font-medium">Digital Bulletin Board</p>
                     </div>
                 </div>
-                <!-- No Add Button - Static Site -->
-                <div class="text-sm text-indigo-200 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
-                    <i class="fa-regular fa-calendar mr-2"></i>
-                    <span>Fall Quarter 2025</span>
+                
+                <div class="flex items-center gap-4">
+                    <!-- Date Badge -->
+                    <div class="hidden md:flex text-sm text-indigo-200 bg-indigo-500/10 px-3 py-1.5 rounded-full border border-indigo-500/20 items-center">
+                        <i class="fa-regular fa-calendar mr-2"></i>
+                        <span>Fall 2025</span>
+                    </div>
+                    
+                    <!-- Add Button -->
+                    <button onclick="toggleModal(true)" class="bg-white text-indigo-900 hover:bg-indigo-50 px-4 py-2 rounded-lg font-semibold text-sm transition-colors shadow-lg shadow-white/10 flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span class="hidden sm:inline">Add Resource</span>
+                    </button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Main Grid -->
+    <!-- Main Content -->
     <main class="flex-grow p-6 sm:p-10 relative z-10">
-        <div class="max-w-7xl mx-auto mb-8 flex justify-between items-center">
-            <h2 class="text-2xl font-semibold text-white/90">Upcoming Deadlines</h2>
-            <div class="text-sm text-gray-400">2 Assignments</div>
+        <div class="max-w-7xl mx-auto mb-8 flex justify-between items-end border-b border-white/10 pb-4">
+            <div>
+                <h2 class="text-2xl font-semibold text-white/90">Dashboard</h2>
+                <p class="text-sm text-gray-400 mt-1">Manage shared links, docs, and deadlines.</p>
+            </div>
+            <div class="text-sm text-gray-400 font-mono">
+                <span id="count-display">0</span> Resources
+            </div>
         </div>
 
+        <!-- Grid Container -->
         <div id="pin-container" class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <!-- Static Pins injected here -->
+            <!-- Dynamic Content Injected Here -->
         </div>
     </main>
 
+    <!-- Add Resource Modal -->
+    <div id="add-modal" class="fixed inset-0 z-[100] hidden">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 modal-overlay transition-opacity opacity-0" id="modal-backdrop" onclick="toggleModal(false)"></div>
+        
+        <!-- Modal Panel -->
+        <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-[#1e293b] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md transform scale-95 opacity-0 transition-all duration-300 pointer-events-auto relative overflow-hidden" id="modal-panel">
+                
+                <!-- Modal Header -->
+                <div class="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-white/5">
+                    <h3 class="text-lg font-semibold text-white">Add New Resource</h3>
+                    <button onclick="toggleModal(false)" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Form -->
+                <form id="resource-form" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+                    
+                    <!-- Title -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Title</label>
+                        <input type="text" name="title" required placeholder="e.g., Project Requirements" 
+                            class="glass-input w-full rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <!-- URL -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Resource URL</label>
+                        <input type="url" name="url" required placeholder="https://docs.google.com/..." 
+                            class="glass-input w-full rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Description</label>
+                        <textarea name="description" rows="3" placeholder="Brief details about this resource..." 
+                            class="glass-input w-full rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Date -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Due Date (Optional)</label>
+                            <input type="text" name="dueDate" placeholder="Nov 24" 
+                                class="glass-input w-full rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500">
+                        </div>
+
+                        <!-- Color -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Category Color</label>
+                            <select name="color" class="glass-input w-full rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 appearance-none cursor-pointer">
+                                <option value="indigo" class="bg-slate-800">Indigo (General)</option>
+                                <option value="emerald" class="bg-slate-800">Emerald (Done)</option>
+                                <option value="rose" class="bg-slate-800">Rose (Urgent)</option>
+                                <option value="amber" class="bg-slate-800">Amber (WIP)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="pt-4 flex justify-end gap-3">
+                        <button type="button" onclick="toggleModal(false)" class="px-4 py-2 text-gray-300 hover:text-white font-medium transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-lg font-semibold shadow-lg shadow-indigo-500/20 transition-all transform hover:scale-[1.02]">
+                            Post Resource
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // --- Static Data Configuration ---
-        // Edit these objects to change the content displayed on the site
-        const staticPins = [
+        // --- State Management ---
+        // In the full stack version, this will be replaced by API calls
+        let resources = [
             { 
                 id: '1', 
                 title: 'Team Charter', 
-                // REPLACE THIS URL with your actual Google Doc link
                 url: 'https://docs.google.com/document/d/1dci-OMoisMKeegyh9XK_5nrHku53Wox34YQ0o-Mj0Kg/edit?usp=sharing', 
                 description: 'Small assignment, mostly subjective questions.', 
                 dueDate: 'Nov 24',
-                color: 'indigo' 
+                color: 'indigo',
+                createdAt: Date.now()
             },
             { 
                 id: '2', 
                 title: 'Checkpoint Assignment', 
-                // REPLACE THIS URL with your actual Google Doc link
                 url: 'https://docs.google.com/document/d/1PjAxI2IRExi_4kDWuSRAxK7kCroHqQ24Z05p8-2O_fE/edit?usp=sharing', 
                 description: 'Mid-point submission for group project.', 
                 dueDate: 'Nov 24',
-                color: 'emerald' 
+                color: 'emerald',
+                createdAt: Date.now()
             }
         ];
 
+        // --- DOM Elements ---
         const pinContainer = document.getElementById('pin-container');
+        const countDisplay = document.getElementById('count-display');
+        const modal = document.getElementById('add-modal');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const modalPanel = document.getElementById('modal-panel');
+
+        // --- Logic ---
+
+        function init() {
+            renderPins();
+        }
 
         function renderPins() {
             pinContainer.innerHTML = '';
-            staticPins.forEach(pin => pinContainer.appendChild(createPinElement(pin)));
+            
+            if (resources.length === 0) {
+                pinContainer.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center py-20 text-center opacity-60">
+                        <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                            <i class="fa-solid fa-folder-open text-2xl"></i>
+                        </div>
+                        <p class="text-lg font-medium">No resources yet</p>
+                        <p class="text-sm">Click "Add Resource" to get started.</p>
+                    </div>
+                `;
+            } else {
+                resources.forEach(pin => pinContainer.appendChild(createPinElement(pin)));
+            }
+            
+            countDisplay.innerText = resources.length;
         }
 
         function createPinElement(pin) {
             const div = document.createElement('div');
             
-            // Glass gradients
-            const gradients = {
-                indigo: 'from-indigo-500/20 to-purple-500/20 border-indigo-500/30 hover:border-indigo-500/50',
-                emerald: 'from-emerald-500/20 to-teal-500/20 border-emerald-500/30 hover:border-emerald-500/50',
-                rose: 'from-rose-500/20 to-pink-500/20 border-rose-500/30 hover:border-rose-500/50',
-            };
-            
-            const glowColors = {
-                indigo: 'bg-indigo-500',
-                emerald: 'bg-emerald-500',
-                rose: 'bg-rose-500',
+            // Visual configurations based on color selection
+            const config = {
+                indigo: { grad: 'from-indigo-500/20 to-purple-500/20', border: 'border-indigo-500/30', hover: 'hover:border-indigo-500/50', glow: 'bg-indigo-500' },
+                emerald: { grad: 'from-emerald-500/20 to-teal-500/20', border: 'border-emerald-500/30', hover: 'hover:border-emerald-500/50', glow: 'bg-emerald-500' },
+                rose: { grad: 'from-rose-500/20 to-pink-500/20', border: 'border-rose-500/30', hover: 'hover:border-rose-500/50', glow: 'bg-rose-500' },
+                amber: { grad: 'from-amber-500/20 to-orange-500/20', border: 'border-amber-500/30', hover: 'hover:border-amber-500/50', glow: 'bg-amber-500' }
             };
 
-            const gradientClass = gradients[pin.color] || gradients.indigo;
-            const glowClass = glowColors[pin.color] || 'bg-indigo-500';
+            const theme = config[pin.color] || config.indigo;
 
-            // Icon Detection
+            // Smart Icon Detection
             let icon = 'fa-link';
-            if (pin.url.includes('docs.google')) icon = 'fa-file-lines';
-            else if (pin.url.includes('drive.google')) icon = 'fa-google-drive';
-            else if (pin.url.includes('figma')) icon = 'fa-pen-nib';
+            const lowerUrl = pin.url.toLowerCase();
+            if (lowerUrl.includes('docs.google')) icon = 'fa-file-lines';
+            else if (lowerUrl.includes('drive.google')) icon = 'fa-google-drive';
+            else if (lowerUrl.includes('figma')) icon = 'fa-pen-nib';
+            else if (lowerUrl.includes('github')) icon = 'fa-github';
+            else if (lowerUrl.includes('youtube')) icon = 'fa-youtube';
+            else if (lowerUrl.includes('calendar')) icon = 'fa-calendar-days';
 
-            div.className = `glass-card rounded-2xl p-6 flex flex-col h-64 relative group bg-gradient-to-br ${gradientClass}`;
+            div.className = `glass-card rounded-2xl p-6 flex flex-col h-64 relative group bg-gradient-to-br ${theme.grad} ${theme.border} ${theme.hover}`;
             
+            // Safe HTML injection for user content
             div.innerHTML = `
                 <div class="flex items-start gap-4 mb-4">
-                    <div class="w-12 h-12 rounded-lg ${glowClass} bg-opacity-20 flex items-center justify-center border border-white/10 shrink-0 shadow-[0_0_15px_rgba(0,0,0,0.2)]">
+                    <div class="w-12 h-12 rounded-lg ${theme.glow} bg-opacity-20 flex items-center justify-center border border-white/10 shrink-0 shadow-[0_0_15px_rgba(0,0,0,0.2)] transition-transform group-hover:scale-105 duration-300">
                         <i class="fa-solid ${icon} text-white text-xl"></i>
                     </div>
-                    <div class="overflow-hidden pt-1">
-                        <h3 class="font-semibold text-lg leading-tight text-white truncate mb-1" title="${pin.title}">${pin.title}</h3>
+                    <div class="overflow-hidden pt-1 w-full">
+                        <h3 class="font-semibold text-lg leading-tight text-white truncate mb-1" title="${escapeHtml(pin.title)}">${escapeHtml(pin.title)}</h3>
                         <div class="flex items-center gap-2 text-xs font-medium">
+                             ${pin.dueDate ? `
                              <span class="bg-white/10 px-2 py-0.5 rounded text-indigo-200 border border-white/5">
-                                Due ${pin.dueDate}
-                             </span>
+                                Due ${escapeHtml(pin.dueDate)}
+                             </span>` : ''}
                         </div>
                     </div>
+                    <button onclick="deleteResource('${pin.id}')" class="text-white/20 hover:text-rose-400 transition-colors -mr-2 -mt-2 p-2" title="Delete">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
                 </div>
 
-                <p class="text-sm text-gray-300 leading-relaxed line-clamp-3 mb-auto opacity-80 border-t border-white/5 pt-4 mt-2">
-                    ${pin.description}
+                <p class="text-sm text-gray-300 leading-relaxed line-clamp-3 mb-auto opacity-80 border-t border-white/5 pt-4 mt-2 break-words">
+                    ${escapeHtml(pin.description)}
                 </p>
 
                 <div class="mt-4 pt-4 flex justify-between items-end">
-                    <a href="${pin.url}" target="_blank" class="w-full text-center bg-white/10 hover:bg-white/20 border border-white/10 text-white py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 group-hover:shadow-lg">
-                        Open Doc <i class="fa-solid fa-arrow-up-right-from-square text-xs opacity-70"></i>
+                    <a href="${escapeHtml(pin.url)}" target="_blank" class="w-full text-center bg-white/10 hover:bg-white/20 border border-white/10 text-white py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 group-hover:shadow-lg group-hover:bg-white/15">
+                        Open Resource <i class="fa-solid fa-arrow-up-right-from-square text-xs opacity-70"></i>
                     </a>
                 </div>
             `;
             return div;
         }
 
-        // Initial Render
-        renderPins();
+        // --- Modal Logic ---
+
+        function toggleModal(show) {
+            if (show) {
+                modal.classList.remove('hidden');
+                // Small timeout to allow display:block to apply before opacity transition
+                setTimeout(() => {
+                    modalBackdrop.classList.remove('opacity-0');
+                    modalPanel.classList.remove('opacity-0', 'scale-95');
+                    modalPanel.classList.add('scale-100');
+                }, 10);
+            } else {
+                modalBackdrop.classList.add('opacity-0');
+                modalPanel.classList.remove('scale-100');
+                modalPanel.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    document.getElementById('resource-form').reset();
+                }, 300);
+            }
+        }
+
+        // --- Form Handling ---
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const newResource = {
+                id: Date.now().toString(), // Temporary ID generation
+                title: formData.get('title'),
+                url: formData.get('url'),
+                description: formData.get('description'),
+                dueDate: formData.get('dueDate'),
+                color: formData.get('color'),
+                createdAt: Date.now()
+            };
+
+            // Optimistic UI Update
+            resources.unshift(newResource);
+            renderPins();
+            toggleModal(false);
+            
+            // TODO: In the next step, we will send this data to your Node/Express backend
+            console.log('New Resource Created:', newResource);
+        }
+
+        function deleteResource(id) {
+            if(confirm('Are you sure you want to remove this link?')) {
+                resources = resources.filter(r => r.id !== id);
+                renderPins();
+                // TODO: Add API call to delete from database
+            }
+        }
+
+        // Helper to prevent XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Start app
+        init();
     </script>
 </body>
 </html>
